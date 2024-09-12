@@ -9,8 +9,8 @@ import os
 import json
 import textwrap
 import GlyphsApp
-import AppKit
-from AppKit import NSFont, NSColor, NSEvent, NSOpenPanel, NSEventMaskKeyDown
+
+from AppKit import NSFont, NSColor, NSAttributedString, NSEvent, NSOpenPanel, NSScreen, NSEventMaskKeyDown, NSFileHandlingPanelOKButton, NSForegroundColorAttributeName, NSFontAttributeName, NSCalibratedRGBColorSpace
 
 SCRIPT_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script.txt")
 COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script Colors.txt")
@@ -38,14 +38,17 @@ PREDEFINED_COLORS = [
     NSColor.brownColor()
 ]
 
+
 def nscolor_to_rgb(color):
     """Convert NSColor to an RGB tuple."""
-    color = color.colorUsingColorSpaceName_(AppKit.NSCalibratedRGBColorSpace)
+    color = color.colorUsingColorSpaceName_(NSCalibratedRGBColorSpace)
     return (color.redComponent(), color.greenComponent(), color.blueComponent(), color.alphaComponent())
+
 
 def rgb_to_nscolor(rgb):
     """Convert an RGB tuple to NSColor."""
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
+
 
 if 'CustomColorPickerWindowUnique' not in globals():
     class CustomColorPickerWindowUnique(vanilla.Window):
@@ -76,6 +79,7 @@ if 'CustomColorPickerWindowUnique' not in globals():
             self.callback(sender.color)
             self.w.close()
 
+
 class ScriptGridWindow:
     def __init__(self):
         self.scripts = {}  # Initialize the scripts attribute
@@ -90,7 +94,7 @@ class ScriptGridWindow:
         self.total_sub_windows = TOTAL_SUB_WINDOWS
 
         # Get screen dimensions and center the window
-        screen_frame = AppKit.NSScreen.mainScreen().frame()
+        screen_frame = NSScreen.mainScreen().frame()
         window_width = 1035.5
         window_height = 540
         window_x = (screen_frame.size.width - window_width) / 2
@@ -101,25 +105,22 @@ class ScriptGridWindow:
         self.current_sub_window = 0
         self.sub_windows = []
         self.total_sub_windows = TOTAL_SUB_WINDOWS
-#==========================================================================================================
+# ==========================================================================================================
 #       Top window color & title
         self.w.titleBackground = vanilla.Group((0, 0, COLS * BOX_WIDTH + 150, 45))
         self.w.titleBackground.getNSView().setWantsLayer_(True)
-        self.w.titleBackground.getNSView().layer().setBackgroundColor_(AppKit.NSColor.keyboardFocusIndicatorColor().CGColor())
+        self.w.titleBackground.getNSView().layer().setBackgroundColor_(NSColor.keyboardFocusIndicatorColor().CGColor())
         self.w.titleLabel = vanilla.TextBox((1035.5 / 2 - 165, 16, 330, 20), "Wall Script", alignment="center")
-        self.w.titleLabel.getNSTextField().setFont_(AppKit.NSFont.systemFontOfSize_(16))
-        
+        self.w.titleLabel.getNSTextField().setFont_(NSFont.systemFontOfSize_(16))
+
         self.w.titleLabel2 = vanilla.TextBox((12 - 0, 528, 330, 20), "Wall Script - V.1 - By: Reza Bohloul", alignment="left")
-        self.w.titleLabel2.getNSTextField().setFont_(AppKit.NSFont.systemFontOfSize_(8))
+        self.w.titleLabel2.getNSTextField().setFont_(NSFont.systemFontOfSize_(8))
 
-        
-        
-        self.w.titleBackground2 = vanilla.Group((0, 45, 1035.5 , 3))
+        self.w.titleBackground2 = vanilla.Group((0, 45, 1035.5, 3))
         self.w.titleBackground2.getNSView().setWantsLayer_(True)
-        self.w.titleBackground2.getNSView().layer().setBackgroundColor_(AppKit.NSColor.darkGrayColor
-().CGColor())
+        self.w.titleBackground2.getNSView().layer().setBackgroundColor_(NSColor.darkGrayColor().CGColor())
 
-#==========================================================================================================
+# ==========================================================================================================
 
         # Add and delete page buttons (+ and -)
         self.w.add_button = vanilla.Button((825, 15, 30, 20), "+", callback=self.add_page)
@@ -144,8 +145,7 @@ class ScriptGridWindow:
         if not title.strip():
             title = f"Wall Script {self.current_sub_window + 1}"
         self.w.titleLabel.set(title)
-        
-        
+
     def update_total_sub_windows(self):
         if os.path.exists(SCRIPT_FILE):
             with open(SCRIPT_FILE, 'r', encoding='utf-8') as file:
@@ -154,12 +154,6 @@ class ScriptGridWindow:
                     global TOTAL_SUB_WINDOWS
                     TOTAL_SUB_WINDOWS = int(first_line.split('=')[1])
                     self.total_sub_windows = TOTAL_SUB_WINDOWS
-
-    def title_edited(self, sender):
-        title = sender.get()
-        if not title.strip():
-            title = f"Wall Script {self.current_sub_window + 1}"
-        self.w.titleLabel.set(title)
 
     def update_subview(self, index):
         for name in dir(self.w.subview):
@@ -179,8 +173,8 @@ class ScriptGridWindow:
 
     def create_sub_window(self, index):
         sub_window = []
-        gray_color = AppKit.NSColor.systemGrayColor()
-        blue_color = AppKit.NSColor.systemBlueColor()
+        gray_color = NSColor.systemGrayColor()
+        blue_color = NSColor.systemBlueColor()
         for row in range(ROWS):
             for col in range(COLS):
                 box_index = row * COLS + col + index * COLS * ROWS
@@ -205,17 +199,16 @@ class ScriptGridWindow:
                 else:
                     button_layer.setBackgroundColor_(gray_color.CGColor() if script_name == "No Script" else blue_color.CGColor())
 
-                attributed_title = AppKit.NSAttributedString.alloc().initWithString_attributes_(
+                attributed_title = NSAttributedString.alloc().initWithString_attributes_(
                     wrapped_name, {
-                        AppKit.NSForegroundColorAttributeName: AppKit.NSColor.whiteColor(),
-                        AppKit.NSFontAttributeName: FONT_BOLD
+                        NSForegroundColorAttributeName: NSColor.whiteColor(),
+                        NSFontAttributeName: FONT_BOLD
                     }
                 )
                 button.getNSButton().setAttributedTitle_(attributed_title)
 
                 tiny_button = vanilla.Button((x_pos + 1, y_pos + 83, 30, 48), "＋", callback=self.change_script)
                 tiny_button.box_index = box_index
-
 
                 color_button = vanilla.Button((x_pos + 68, y_pos + 83, 30, 48), "⌖", callback=self.show_color_picker)
                 color_button.box_index = box_index
@@ -242,7 +235,7 @@ class ScriptGridWindow:
         open_panel = NSOpenPanel.openPanel()
         open_panel.setTitle_("Choose Script")
         open_panel.setAllowedFileTypes_(["py"])
-        if open_panel.runModal() == AppKit.NSFileHandlingPanelOKButton:
+        if open_panel.runModal() == NSFileHandlingPanelOKButton:
             selected_file = open_panel.URL().path()
             self.scripts[f"box_{sender.box_index}"] = selected_file
             self.refresh_button_view(sender.box_index)
@@ -277,18 +270,18 @@ class ScriptGridWindow:
         if saved_color_rgb:
             color = rgb_to_nscolor(saved_color_rgb)
         else:
-            gray_color = AppKit.NSColor.systemGrayColor()
-            blue_color = AppKit.NSColor.systemBlueColor()
+            gray_color = NSColor.systemGrayColor()
+            blue_color = NSColor.systemBlueColor()
             color = gray_color if script_name == "No Script" else blue_color
 
         button = getattr(self.w.subview, f"button_{box_index % (COLS * ROWS)}")
         button_layer = button.getNSButton().layer()
         button_layer.setBackgroundColor_(color.CGColor())
 
-        attributed_title = AppKit.NSAttributedString.alloc().initWithString_attributes_(
+        attributed_title = NSAttributedString.alloc().initWithString_attributes_(
             wrapped_name, {
-                AppKit.NSForegroundColorAttributeName: AppKit.NSColor.whiteColor(),
-                AppKit.NSFontAttributeName: FONT_BOLD
+                NSForegroundColorAttributeName: NSColor.whiteColor(),
+                NSFontAttributeName: FONT_BOLD
             }
         )
         button.getNSButton().setAttributedTitle_(attributed_title)
@@ -375,6 +368,7 @@ class ScriptGridWindow:
         if self.key_event_monitor:
             NSEvent.removeMonitor_(self.key_event_monitor)
             self.key_event_monitor = None
+
 
 # Initialize the window
 ScriptGridWindow()
