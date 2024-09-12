@@ -10,7 +10,7 @@ import json
 import textwrap
 import GlyphsApp
 
-from AppKit import NSFont, NSColor, NSAttributedString, NSEvent, NSOpenPanel, NSScreen, NSEventMaskKeyDown, NSFileHandlingPanelOKButton, NSForegroundColorAttributeName, NSFontAttributeName, NSCalibratedRGBColorSpace
+from AppKit import NSFont, NSColor, NSAttributedString, NSImage, NSEvent, NSOpenPanel, NSScreen, NSEventMaskKeyDown, NSFileHandlingPanelOKButton, NSForegroundColorAttributeName, NSFontAttributeName, NSCalibratedRGBColorSpace, NSImageScaleProportionallyUpOrDown
 
 SCRIPT_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script.txt")
 COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script Colors.txt")
@@ -18,8 +18,10 @@ COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall
 TOTAL_SUB_WINDOWS = 4
 ROWS = 4
 COLS = 6
-BOX_HEIGHT = 10
-BOX_WIDTH = 150
+BOX_HEIGHT = 80
+BOX_WIDTH = 120
+GRID_SPACING = 10
+TITLE_BAR_HEIGHT = 45
 FONT_SIZE = 13
 FONT_BOLD = NSFont.boldSystemFontOfSize_(FONT_SIZE)
 
@@ -90,51 +92,60 @@ class ScriptGridWindow:
         # Main window initialization
         self.w = vanilla.Window((1035.5, 540), closable=True)
         self.current_sub_window = 0
-        self.sub_windows = []
         self.total_sub_windows = TOTAL_SUB_WINDOWS
 
         # Get screen dimensions and center the window
         screen_frame = NSScreen.mainScreen().frame()
-        window_width = 1035.5
-        window_height = 540
+        window_width = BOX_WIDTH * COLS + GRID_SPACING * 2
+        window_height = BOX_HEIGHT * ROWS + TITLE_BAR_HEIGHT + GRID_SPACING * 2
         window_x = (screen_frame.size.width - window_width) / 2
         window_y = (screen_frame.size.height - window_height) / 2
 
         # Main window initialization centered on the screen
         self.w = vanilla.Window((window_x, window_y, window_width, window_height), closable=True)
         self.current_sub_window = 0
-        self.sub_windows = []
+
         self.total_sub_windows = TOTAL_SUB_WINDOWS
 # ==========================================================================================================
 #       Top window color & title
-        self.w.titleBackground = vanilla.Group((0, 0, COLS * BOX_WIDTH + 150, 45))
+        self.w.titleBackground = vanilla.Group((0, 0, window_width, TITLE_BAR_HEIGHT))
         self.w.titleBackground.getNSView().setWantsLayer_(True)
         self.w.titleBackground.getNSView().layer().setBackgroundColor_(NSColor.keyboardFocusIndicatorColor().CGColor())
-        self.w.titleLabel = vanilla.TextBox((1035.5 / 2 - 165, 16, 330, 20), "Wall Script", alignment="center")
+        self.w.titleLabel = vanilla.TextBox((window_width / 2 - 165, 16, 330, 20), "Wall Script", alignment="center")
         self.w.titleLabel.getNSTextField().setFont_(NSFont.systemFontOfSize_(16))
 
         self.w.titleLabel2 = vanilla.TextBox((12 - 0, 528, 330, 20), "Wall Script - V.1 - By: Reza Bohloul", alignment="left")
         self.w.titleLabel2.getNSTextField().setFont_(NSFont.systemFontOfSize_(8))
 
-        self.w.titleBackground2 = vanilla.Group((0, 45, 1035.5, 3))
-        self.w.titleBackground2.getNSView().setWantsLayer_(True)
-        self.w.titleBackground2.getNSView().layer().setBackgroundColor_(NSColor.darkGrayColor().CGColor())
+        self.w.bar = vanilla.Group((0, TITLE_BAR_HEIGHT, window_width, 2))
+        self.w.bar.getNSView().setWantsLayer_(True)
+        self.w.bar.getNSView().layer().setBackgroundColor_(NSColor.darkGrayColor().CGColor())
 
 # ==========================================================================================================
 
         # Add and delete page buttons (+ and -)
-        self.w.add_button = vanilla.Button((825, 15, 30, 20), "+", callback=self.add_page)
-        self.w.delete_button = vanilla.Button((180, 15, 30, 20), "-", callback=self.delete_page)
+        self.w.add_button = vanilla.Button((window_width - 64, 15, 12, 12), "", callback=self.add_page)
+        self.w.add_button.getNSButton().setImage_(NSImage.imageNamed_("NSAddTemplate"))
+        self.w.add_button.getNSButton().setBordered_(False)
+        self.w.add_button.getNSButton().setImageScaling_(NSImageScaleProportionallyUpOrDown)
 
-        for i in range(self.total_sub_windows):
-            self.sub_windows.append(self.create_sub_window(i))
+        self.w.delete_button = vanilla.Button((48, 15, 12, 12), "", callback=self.delete_page)
+        self.w.delete_button.getNSButton().setImage_(NSImage.imageNamed_("NSRemoveTemplate"))
+        self.w.delete_button.getNSButton().setBordered_(False)
+        self.w.delete_button.getNSButton().setImageScaling_(NSImageScaleProportionallyUpOrDown)
 
-        self.w.subview = vanilla.Group((10, 50, COLS * 200, ROWS * 200))
+        self.w.subview = vanilla.Group((GRID_SPACING, TITLE_BAR_HEIGHT + GRID_SPACING, window_width, BOX_HEIGHT * ROWS))
         self.update_subview(self.current_sub_window)
 
         # Navigation buttons
-        self.w.right_button = vanilla.Button((861, 15, 164, 20), ">", callback=self.navigate_right)
-        self.w.left_button = vanilla.Button((10.5, 15, 164, 20), "<", callback=self.navigate_left)
+        self.w.right_button = vanilla.Button((window_width - 32, 12, 14, 20), "", callback=self.navigate_right)
+        self.w.right_button.getNSButton().setImage_(NSImage.imageNamed_("NSTouchBarGoForwardTemplate"))
+        self.w.right_button.getNSButton().setBordered_(False)
+        self.w.right_button.getNSButton().setImageScaling_(NSImageScaleProportionallyUpOrDown)
+        self.w.left_button = vanilla.Button((14, 12, 14, 20), "", callback=self.navigate_left)
+        self.w.left_button.getNSButton().setImage_(NSImage.imageNamed_("NSTouchBarGoBackTemplate"))
+        self.w.left_button.getNSButton().setBordered_(False)
+        self.w.left_button.getNSButton().setImageScaling_(NSImageScaleProportionallyUpOrDown)
 
         self.add_key_event_monitor()
         self.w.bind("close", self.remove_key_event_monitor)
@@ -160,31 +171,27 @@ class ScriptGridWindow:
             if name.startswith("button_") or name.startswith("tiny_button_") or name.startswith("color_button_") or name.startswith("remove_button_"):
                 delattr(self.w.subview, name)
 
-        subview_content = self.sub_windows[index]
-        for i, (button, tiny_button, color_button, remove_button) in enumerate(subview_content):
-            setattr(self.w.subview, f"button_{i}", button)
-            setattr(self.w.subview, f"tiny_button_{i}", tiny_button)
-            setattr(self.w.subview, f"color_button_{i}", color_button)
-            setattr(self.w.subview, f"remove_button_{i}", remove_button)
+        self.create_sub_window(index)
 
         current_title = self.w.titleLabel.get()
         if current_title.startswith("Wall Script"):
             self.w.titleLabel.set(f"Wall Script {index + 1}")
 
     def create_sub_window(self, index):
-        sub_window = []
         gray_color = NSColor.systemGrayColor()
         blue_color = NSColor.systemBlueColor()
+        idx = 0
         for row in range(ROWS):
             for col in range(COLS):
                 box_index = row * COLS + col + index * COLS * ROWS
-                x_pos = col * 170
-                y_pos = row * 120
+                x_pos = col * BOX_WIDTH
+                y_pos = row * BOX_HEIGHT
                 script_name = self.scripts.get(f"box_{box_index}", "No Script")
                 display_name = os.path.basename(script_name) if script_name != "No Script" else script_name
                 wrapped_name = "\n".join(textwrap.wrap(display_name, width=20))
 
-                button = vanilla.Button((x_pos + 8, y_pos + 10, 150, 100), "", callback=self.run_script)
+                button = vanilla.Button((x_pos + 8, y_pos + 6, BOX_WIDTH - GRID_SPACING - 6, BOX_HEIGHT - GRID_SPACING - 6), "", callback=self.run_script)
+                setattr(self.w.subview, f"button_{idx}", button)
                 button.box_index = box_index
                 button.getNSButton().setWantsLayer_(True)
                 button_layer = button.getNSButton().layer()
@@ -207,17 +214,25 @@ class ScriptGridWindow:
                 )
                 button.getNSButton().setAttributedTitle_(attributed_title)
 
-                tiny_button = vanilla.Button((x_pos + 1, y_pos + 83, 30, 48), "＋", callback=self.change_script)
+                tiny_button = vanilla.Button((x_pos + 2, y_pos + BOX_HEIGHT - 24, 22, 22), "", callback=self.change_script)
+                setattr(self.w.subview, f"tiny_button_{idx}", tiny_button)
+                tiny_button.getNSButton().setImage_(NSImage.imageNamed_("NSAddTemplate"))
+                tiny_button.getNSButton().setBordered_(False)
                 tiny_button.box_index = box_index
 
-                color_button = vanilla.Button((x_pos + 68, y_pos + 83, 30, 48), "⌖", callback=self.show_color_picker)
+                color_button = vanilla.Button((x_pos + (BOX_WIDTH / 2) - 12, y_pos + BOX_HEIGHT - 24, 22, 22), "", callback=self.show_color_picker)
+                setattr(self.w.subview, f"color_button_{idx}", color_button)
+                color_button.getNSButton().setImage_(NSImage.imageNamed_("NSActionTemplate"))
+                color_button.getNSButton().setBordered_(False)
                 color_button.box_index = box_index
 
-                remove_button = vanilla.Button((x_pos + 135, y_pos + 83, 30, 48), "∅", callback=self.remove_script)
+                remove_button = vanilla.Button((x_pos + BOX_WIDTH - 24, y_pos + BOX_HEIGHT - 24, 22, 22), "", callback=self.remove_script)
+                setattr(self.w.subview, f"remove_button_{idx}", remove_button)
+                remove_button.getNSButton().setImage_(NSImage.imageNamed_("GSDisabledTemplate"))
+                remove_button.getNSButton().setBordered_(False)
                 remove_button.box_index = box_index
 
-                sub_window.append((button, tiny_button, color_button, remove_button))
-        return sub_window
+                idx += 1
 
     def run_script(self, sender):
         script_path = self.scripts.get(f"box_{sender.box_index}", None)
@@ -298,14 +313,12 @@ class ScriptGridWindow:
 
     def add_page(self, sender):
         self.total_sub_windows += 1
-        self.sub_windows.append(self.create_sub_window(self.total_sub_windows - 1))
         self.current_sub_window = self.total_sub_windows - 1
         self.update_subview(self.current_sub_window)
         self.save_total_sub_windows()
 
     def delete_page(self, sender):
         if self.total_sub_windows > 1:
-            del self.sub_windows[-1]
             self.total_sub_windows -= 1
             self.current_sub_window = min(self.current_sub_window, self.total_sub_windows - 1)
             self.update_subview(self.current_sub_window)
