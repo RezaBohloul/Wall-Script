@@ -52,29 +52,36 @@ def rgb_to_nscolor(rgb):
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
 
 
+def make_color_window(color_options, callback):
+    BUTTON_SIZE = 40
+    BUTTONS_PER_ROW = 4
+    width = BUTTONS_PER_ROW * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING
+    height = (len(color_options) / BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING
+    w = vanilla.Window((width, height), "Select Color", closable=True)
+
+    for i, color in enumerate(color_options):
+        x_pos = (i % BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING + 10) + 10
+        y_pos = (i // BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING + 7) + 10
+
+        row = i // BUTTONS_PER_ROW
+        col = i % BUTTONS_PER_ROW
+        x_pos = GRID_SPACING + col * (BUTTON_SIZE + GRID_SPACING)
+        y_pos = GRID_SPACING + row * (BUTTON_SIZE + GRID_SPACING)
+        button = vanilla.Button((x_pos + 3, y_pos + 1, BUTTON_SIZE - 6, BUTTON_SIZE - 6), "", callback=callback)
+        button.color = color
+        button.getNSButton().setWantsLayer_(True)
+        button.getNSButton().layer().setBackgroundColor_(color.CGColor())
+        button.getNSButton().layer().setCornerRadius_(5)
+        button.getNSButton().layer().setBorderWidth_(False)
+        setattr(w, f"button_{i}", button)
+    return w
+
+
 if 'CustomColorPickerWindowUnique' not in globals():
     class CustomColorPickerWindowUnique(vanilla.Window):
         def __init__(self, color_options, callback):
             self.callback = callback
-            BUTTON_SIZE = 40
-            GRID_SPACING = 10
-            BUTTONS_PER_ROW = 4
-            width = 240
-            height = 170
-            self.w = vanilla.Window((width, height), "Select Color", closable=True)
-            self.w.color_buttons = vanilla.Group((5, 5, 250, 250))
-
-            for i, color in enumerate(color_options):
-                x_pos = (i % BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING + 10) + 10
-                y_pos = (i // BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING + 7) + 10
-                button = vanilla.Button((x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), "", callback=self.color_selected)
-                button.color = color
-                button.getNSButton().setWantsLayer_(True)
-                button.getNSButton().layer().setBackgroundColor_(color.CGColor())
-                button.getNSButton().layer().setCornerRadius_(5)
-                button.getNSButton().layer().setBorderWidth_(False)
-                setattr(self.w.color_buttons, f"button_{i}", button)
-
+            self.w = make_color_window(color_options, self.color_selected)
             self.w.open()
 
         def color_selected(self, sender):
