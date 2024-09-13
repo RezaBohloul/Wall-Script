@@ -22,7 +22,7 @@ BOX_HEIGHT = 80
 BOX_WIDTH = 120
 GRID_SPACING = 10
 TITLE_BAR_HEIGHT = 45
-FONT_SIZE = 13
+FONT_SIZE = 12.5
 FONT_BOLD = NSFont.boldSystemFontOfSize_(FONT_SIZE)
 
 PREDEFINED_COLORS = [
@@ -95,11 +95,6 @@ class ScriptGridWindow:
         self.load_scripts()
         self.load_colors()
         self.update_total_sub_windows()
-
-        # Main window initialization
-        self.w = vanilla.Window((1035.5, 540), closable=True)
-        self.current_sub_window = 0
-        self.total_sub_windows = TOTAL_SUB_WINDOWS
 
         # Get screen dimensions and center the window
         screen_frame = NSScreen.mainScreen().frame()
@@ -286,7 +281,7 @@ class ScriptGridWindow:
     def refresh_button_view(self, box_index):
         script_name = self.scripts.get(f"box_{box_index}", "No Script")
         display_name = os.path.basename(script_name) if script_name != "No Script" else script_name
-        wrapped_name = "\n".join(textwrap.wrap(display_name, width=20))
+        wrapped_name = "\n".join(textwrap.wrap(display_name, width=19))
 
         saved_color_rgb = self.button_colors.get(f"box_{box_index}", None)
         if saved_color_rgb:
