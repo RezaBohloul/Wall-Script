@@ -18,11 +18,11 @@ COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall
 TOTAL_SUB_WINDOWS = 4
 ROWS = 4
 COLS = 4
-BOX_HEIGHT = 80
-BOX_WIDTH = 120
+BOX_HEIGHT = 90
+BOX_WIDTH = 140
 GRID_SPACING = 10
 TITLE_BAR_HEIGHT = 45
-FONT_SIZE = 12.5
+FONT_SIZE = 12
 FONT_BOLD = NSFont.boldSystemFontOfSize_(FONT_SIZE)
 
 PREDEFINED_COLORS = [
@@ -55,26 +55,34 @@ def rgb_to_nscolor(rgb):
 def make_color_window(color_options, callback):
     BUTTON_SIZE = 40
     BUTTONS_PER_ROW = 4
+    GRID_SPACING = 20
     width = BUTTONS_PER_ROW * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING
     height = (len(color_options) / BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING
     w = vanilla.Window((width, height), "Select Color", closable=True)
 
     for i, color in enumerate(color_options):
-        x_pos = (i % BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING + 10) + 10
-        y_pos = (i // BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING + 7) + 10
-
         row = i // BUTTONS_PER_ROW
         col = i % BUTTONS_PER_ROW
         x_pos = GRID_SPACING + col * (BUTTON_SIZE + GRID_SPACING)
         y_pos = GRID_SPACING + row * (BUTTON_SIZE + GRID_SPACING)
-        button = vanilla.Button((x_pos + 3, y_pos + 1, BUTTON_SIZE - 6, BUTTON_SIZE - 6), "", callback=callback)
+
+        # Create vanilla button with no title
+        button = vanilla.Button((x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), "", callback=callback)
         button.color = color
-        button.getNSButton().setWantsLayer_(True)
-        button.getNSButton().layer().setBackgroundColor_(color.CGColor())
-        button.getNSButton().layer().setCornerRadius_(5)
-        button.getNSButton().layer().setBorderWidth_(False)
+        
+        # Get NSButton instance from vanilla button
+        ns_button = button.getNSButton()
+        ns_button.setWantsLayer_(True)
+        ns_button.layer().setBackgroundColor_(color.CGColor())
+        ns_button.layer().setCornerRadius_(5)
+        ns_button.layer().setBorderWidth_(0)
+        ns_button.setBordered_(False)
+        ns_button.setImageScaling_(NSImageScaleProportionallyUpOrDown)
+        
         setattr(w, f"button_{i}", button)
+    
     return w
+
 
 
 if 'CustomColorPickerWindowUnique' not in globals():
