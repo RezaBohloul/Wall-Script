@@ -51,20 +51,32 @@ def rgb_to_nscolor(rgb):
     """Convert an RGB tuple to NSColor."""
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
 
-
+# Place color window buttons without text in the center of the screen.
 def make_color_window(color_options, callback):
     BUTTON_SIZE = 40
     BUTTONS_PER_ROW = 4
     GRID_SPACING = 20
-    width = BUTTONS_PER_ROW * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING
-    height = (len(color_options) / BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING
+    width = BUTTONS_PER_ROW * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING - 10
+    height = (len(color_options) / BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING - 8
+
+    # Create the window with default position
     w = vanilla.Window((width, height), "Select Color", closable=True)
+
+    # Get the main screen's frame
+    screen_frame = NSScreen.mainScreen().frame()
+    
+    # Calculate the position to center the window
+    x_pos = (screen_frame.size.width - width) / 2
+    y_pos = (screen_frame.size.height - height) / 2
+    
+    # Set the window's position
+    w.setPosSize((x_pos, y_pos, width, height))
 
     for i, color in enumerate(color_options):
         row = i // BUTTONS_PER_ROW
         col = i % BUTTONS_PER_ROW
-        x_pos = GRID_SPACING + col * (BUTTON_SIZE + GRID_SPACING)
-        y_pos = GRID_SPACING + row * (BUTTON_SIZE + GRID_SPACING)
+        x_pos = GRID_SPACING + col * (BUTTON_SIZE + GRID_SPACING) - 5
+        y_pos = GRID_SPACING + row * (BUTTON_SIZE + GRID_SPACING) - 5
 
         # Create vanilla button with no title
         button = vanilla.Button((x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), "", callback=callback)
@@ -82,8 +94,6 @@ def make_color_window(color_options, callback):
         setattr(w, f"button_{i}", button)
     
     return w
-
-
 
 if 'CustomColorPickerWindowUnique' not in globals():
     class CustomColorPickerWindowUnique(vanilla.Window):
@@ -198,7 +208,7 @@ class ScriptGridWindow:
                 y_pos = row * BOX_HEIGHT
                 script_name = self.scripts.get(f"box_{box_index}", "No Script")
                 display_name = os.path.basename(script_name) if script_name != "No Script" else script_name
-                wrapped_name = "\n".join(textwrap.wrap(display_name, width=20))
+                wrapped_name = "\n".join(textwrap.wrap(display_name, width=19))
 
                 button = vanilla.Button((x_pos + 8, y_pos + 6, BOX_WIDTH - GRID_SPACING - 6, BOX_HEIGHT - GRID_SPACING - 6), "", callback=self.run_script)
                 setattr(self.w.subview, f"button_{idx}", button)
