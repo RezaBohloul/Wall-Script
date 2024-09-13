@@ -17,7 +17,7 @@ COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall
 
 TOTAL_SUB_WINDOWS = 4
 ROWS = 4
-COLS = 6
+COLS = 4
 BOX_HEIGHT = 80
 BOX_WIDTH = 120
 GRID_SPACING = 10
