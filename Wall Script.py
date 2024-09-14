@@ -9,12 +9,11 @@ import os
 import json
 import textwrap
 import GlyphsApp
-
 from AppKit import NSFont, NSColor, NSAttributedString, NSImage, NSEvent, NSOpenPanel, NSScreen, NSEventMaskKeyDown, NSFileHandlingPanelOKButton, NSForegroundColorAttributeName, NSFontAttributeName, NSCalibratedRGBColorSpace, NSImageScaleProportionallyUpOrDown
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 SCRIPT_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script.txt")
 COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script Colors.txt")
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 TOTAL_SUB_WINDOWS = 4
 ROWS = 4
 COLS = 4
@@ -24,33 +23,36 @@ GRID_SPACING = 10
 TITLE_BAR_HEIGHT = 45
 FONT_SIZE = 12
 FONT_BOLD = NSFont.boldSystemFontOfSize_(FONT_SIZE)
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 PREDEFINED_COLORS = [
     NSColor.redColor(),
     NSColor.colorWithRed_green_blue_alpha_(0.0, 0.85, 0.0, 1.0),
     NSColor.blueColor(),
     NSColor.colorWithRed_green_blue_alpha_(1.0, 0.75, 0.0, 1.0),
-    NSColor.orangeColor(),
-    NSColor.colorWithRed_green_blue_alpha_(0.0, 0.5, 0.0, 1.0),
-    NSColor.colorWithRed_green_blue_alpha_(0.0, 0.8, 0.8, 1.0),
-    NSColor.magentaColor(),
-    NSColor.colorWithRed_green_blue_alpha_(1.0, 0.0, 0.5, 1.0),
     NSColor.colorWithRed_green_blue_alpha_(0.5, 0.0, 0.25, 1.0),
+    NSColor.colorWithRed_green_blue_alpha_(0.0, 0.5, 0.0, 1.0),
+    NSColor.colorWithRed_green_blue_alpha_(0.0, 0.0, 0.55, 1.0),
+    NSColor.orangeColor(),
+    NSColor.magentaColor(),
     NSColor.colorWithRed_green_blue_alpha_(0.5, 0.0, 1.0, 1.0),
-    NSColor.brownColor()
+    NSColor.colorWithRed_green_blue_alpha_(0.0, 0.8, 0.8, 1.0),
+    NSColor.brownColor(),
+    NSColor.colorWithRed_green_blue_alpha_(1.0, 0.0, 0.5, 1.0),
+    NSColor.colorWithRed_green_blue_alpha_(0.25, 0.0, 0.5, 1.0),
+    NSColor.colorWithRed_green_blue_alpha_(0.0, 0.4, 0.5, 1.0),
+    NSColor.colorWithRed_green_blue_alpha_(1.0, 1.0, 1.0, 0.1)
+
 ]
-
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 def nscolor_to_rgb(color):
     """Convert NSColor to an RGB tuple."""
     color = color.colorUsingColorSpaceName_(NSCalibratedRGBColorSpace)
     return (color.redComponent(), color.greenComponent(), color.blueComponent(), color.alphaComponent())
 
-
 def rgb_to_nscolor(rgb):
     """Convert an RGB tuple to NSColor."""
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # Place color window buttons without text in the center of the screen.
 def make_color_window(color_options, callback):
     BUTTON_SIZE = 40
@@ -94,7 +96,7 @@ def make_color_window(color_options, callback):
         setattr(w, f"button_{i}", button)
     
     return w
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 if 'CustomColorPickerWindowUnique' not in globals():
     class CustomColorPickerWindowUnique(vanilla.Window):
         def __init__(self, color_options, callback):
@@ -105,8 +107,7 @@ if 'CustomColorPickerWindowUnique' not in globals():
         def color_selected(self, sender):
             self.callback(sender.color)
             self.w.close()
-
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 class ScriptGridWindow:
     def __init__(self):
         self.scripts = {}  # Initialize the scripts attribute
@@ -140,9 +141,7 @@ class ScriptGridWindow:
         self.w.bar = vanilla.Group((0, TITLE_BAR_HEIGHT, window_width, 2))
         self.w.bar.getNSView().setWantsLayer_(True)
         self.w.bar.getNSView().layer().setBackgroundColor_(NSColor.darkGrayColor().CGColor())
-
 # ==========================================================================================================
-
         # Add and delete page buttons (+ and -)
         self.w.add_button = vanilla.Button((window_width - 64, 15, 12, 12), "", callback=self.add_page)
         self.w.add_button.getNSButton().setImage_(NSImage.imageNamed_("NSAddTemplate"))
@@ -156,7 +155,7 @@ class ScriptGridWindow:
 
         self.w.subview = vanilla.Group((GRID_SPACING, TITLE_BAR_HEIGHT + GRID_SPACING, window_width, BOX_HEIGHT * ROWS))
         self.update_subview(self.current_sub_window)
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
         # Navigation buttons
         self.w.right_button = vanilla.Button((window_width - 32, 12, 14, 20), "", callback=self.navigate_right)
         self.w.right_button.getNSButton().setImage_(NSImage.imageNamed_("NSTouchBarGoForwardTemplate"))
@@ -233,7 +232,7 @@ class ScriptGridWindow:
                     }
                 )
                 button.getNSButton().setAttributedTitle_(attributed_title)
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
                 tiny_button = vanilla.Button((x_pos + 2, y_pos + BOX_HEIGHT - 24, 22, 22), "", callback=self.change_script)
                 setattr(self.w.subview, f"tiny_button_{idx}", tiny_button)
                 tiny_button.getNSButton().setImage_(NSImage.imageNamed_("NSAddTemplate"))
@@ -253,7 +252,7 @@ class ScriptGridWindow:
                 remove_button.box_index = box_index
 
                 idx += 1
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     def run_script(self, sender):
         script_path = self.scripts.get(f"box_{sender.box_index}", None)
         if script_path:
@@ -320,7 +319,7 @@ class ScriptGridWindow:
             }
         )
         button.getNSButton().setAttributedTitle_(attributed_title)
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     def navigate_right(self, sender):
         if self.current_sub_window < self.total_sub_windows - 1:
             self.current_sub_window += 1
@@ -362,7 +361,7 @@ class ScriptGridWindow:
                             self.scripts[key] = value
         else:
             self.scripts = {}
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     def save_scripts(self):
         with open(SCRIPT_FILE, 'w', encoding='utf-8') as file:
             file.write(f"TOTAL_SUB_WINDOWS={self.total_sub_windows}\n")
