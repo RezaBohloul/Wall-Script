@@ -1,8 +1,4 @@
-# MenuTitle: Wall Script
 # -*- coding: utf-8 -*-
-__doc__ = """
-Pin your script to the wall and enjoy
-"""
 
 import vanilla
 import os
@@ -41,14 +37,13 @@ PREDEFINED_COLORS = [
     NSColor.colorWithRed_green_blue_alpha_(0.25, 0.0, 0.5, 1.0),
     NSColor.colorWithRed_green_blue_alpha_(0.0, 0.4, 0.5, 1.0),
     NSColor.colorWithRed_green_blue_alpha_(1.0, 1.0, 1.0, 0.1)
-
 ]
 #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 def nscolor_to_rgb(color):
     """Convert NSColor to an RGB tuple."""
     color = color.colorUsingColorSpaceName_(NSCalibratedRGBColorSpace)
     return (color.redComponent(), color.greenComponent(), color.blueComponent(), color.alphaComponent())
-
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 def rgb_to_nscolor(rgb):
     """Convert an RGB tuple to NSColor."""
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
@@ -93,7 +88,7 @@ def make_color_window(color_options, callback):
         ns_button.setBordered_(False)
         ns_button.setImageScaling_(NSImageScaleProportionallyUpOrDown)
         
-        setattr(w, f"button_{i}", button)
+        setattr(w, f"button_{i}, button")
     
     return w
 #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
