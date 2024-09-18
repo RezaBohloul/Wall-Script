@@ -1,11 +1,16 @@
-Wall Script
-Easy to use, add script to wall an enjoy
+# Wall Script
+
+## Easy to use
+
+Add script to each block of wall then when you click on block, attached script runs.
+
+# You can add infinit number of Walls.
 
 ![Wall Script](https://github.com/user-attachments/assets/f25e198c-0900-4e14-b264-70f7172ad8c5)
 
-**License**
+# License
 
-Copyright 2024 - Reza Bohloul.
+## Copyright 2024 - Reza Bohloul.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
