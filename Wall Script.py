@@ -108,7 +108,7 @@ if 'CustomColorPickerWindowUnique' not in globals():
             self.callback(sender.color)
             self.w.close()
 #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-class ScriptGridWindow:
+class WallScript:
     def __init__(self):
         self.scripts = {}  # Initialize the scripts attribute
         self.load_scripts()
@@ -134,6 +134,9 @@ class ScriptGridWindow:
         self.w.titleBackground.getNSView().layer().setBackgroundColor_(NSColor.keyboardFocusIndicatorColor().CGColor())
         self.w.titleLabel = vanilla.TextBox((window_width / 2 - 165, 16, 330, 20), "Wall Script", alignment="center")
         self.w.titleLabel.getNSTextField().setFont_(NSFont.systemFontOfSize_(16))
+
+#        self.w.titleLabel2 = vanilla.TextBox((12 - 0, window_height - 10, 330, 20), "Wall Script - V.1 - By: Reza Bohloul", alignment="left")
+#        self.w.titleLabel2.getNSTextField().setFont_(NSFont.systemFontOfSize_(7))
 
         self.w.bar = vanilla.Group((0, TITLE_BAR_HEIGHT, window_width, 2))
         self.w.bar.getNSView().setWantsLayer_(True)
@@ -400,4 +403,4 @@ class ScriptGridWindow:
 
 
 # Initialize the window
-ScriptGridWindow()
+WallScript()
