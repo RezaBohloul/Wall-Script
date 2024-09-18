@@ -1,6 +1,7 @@
 # Wall Script
+where you pin your most needed script to it
 
-## Easy to use
+Easy to use
 
 Add script to each block of wall then when you click on block, attached script runs.
 
