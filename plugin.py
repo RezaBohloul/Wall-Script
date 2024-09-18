@@ -1,14 +1,19 @@
 # encoding: utf-8
+
 ###########################################################################################################
 #
 #
-# General Plugin
 #
-# Read the docs:
-# https://github.com/RezaBohloul/Wall-Script/blob/main/Wall%20Script.py
 #
 #
 ###########################################################################################################
+
+from __future__ import division, print_function, unicode_literals
+import objc
+from GlyphsApp import Glyphs, EDIT_MENU
+from GlyphsApp.plugins import GeneralPlugin
+from AppKit import NSMenuItem
+
 import vanilla
 import os
 import json
@@ -46,13 +51,7 @@ PREDEFINED_COLORS = [
     NSColor.colorWithRed_green_blue_alpha_(0.25, 0.0, 0.5, 1.0),
     NSColor.colorWithRed_green_blue_alpha_(0.0, 0.4, 0.5, 1.0),
     NSColor.colorWithRed_green_blue_alpha_(1.0, 1.0, 1.0, 0.1)
-
 ]
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-def settings(self):
-	self.name = 'Wall Script'
-	self.keyboardShortcut : 'Command+9'
-	Glyphs.menu[WINDOW_MENU].append(newMenuItem)
 #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 def nscolor_to_rgb(color):
     """Convert NSColor to an RGB tuple."""
@@ -118,7 +117,28 @@ if 'CustomColorPickerWindowUnique' not in globals():
             self.callback(sender.color)
             self.w.close()
 #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-class ScriptGridWindow:
+class WallScript:
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    @objc.python_method
+    def settings(self):
+        self.name = Glyphs.localize({
+            'en': 'Wall Script',
+        })
+
+    @objc.python_method
+    def start(self):
+        if Glyphs.versionNumber >= 3.3:
+            newMenuItem = NSMenuItem(self.name, callback=self.WallScript, target=self)
+        else:
+            newMenuItem = NSMenuItem(self.name, self.WallScript)
+        Glyphs.menu[WINDOW_MENU].append(newMenuItem)
+        self.keyboardShortcut = 'command+9'
+
+    @objc.python_method
+    def __file__(self):
+        """Please leave this method unchanged"""
+        return __file__
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     def __init__(self):
         self.scripts = {}  # Initialize the scripts attribute
         self.load_scripts()
@@ -144,6 +164,9 @@ class ScriptGridWindow:
         self.w.titleBackground.getNSView().layer().setBackgroundColor_(NSColor.keyboardFocusIndicatorColor().CGColor())
         self.w.titleLabel = vanilla.TextBox((window_width / 2 - 165, 16, 330, 20), "Wall Script", alignment="center")
         self.w.titleLabel.getNSTextField().setFont_(NSFont.systemFontOfSize_(16))
+
+#        self.w.titleLabel2 = vanilla.TextBox((12 - 0, window_height - 10, 330, 20), "Wall Script - V.1 - By: Reza Bohloul", alignment="left")
+#        self.w.titleLabel2.getNSTextField().setFont_(NSFont.systemFontOfSize_(7))
 
         self.w.bar = vanilla.Group((0, TITLE_BAR_HEIGHT, window_width, 2))
         self.w.bar.getNSView().setWantsLayer_(True)
@@ -410,4 +433,4 @@ class ScriptGridWindow:
 
 
 # Initialize the window
-ScriptGridWindow()
+WallScript()
