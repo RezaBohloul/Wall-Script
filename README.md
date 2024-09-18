@@ -1,5 +1,5 @@
 # Wall Script
-where you pin your most needed script to it
+*where you pin your most needed script to it*
 
 Easy to use
 
