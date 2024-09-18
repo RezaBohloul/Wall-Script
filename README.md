@@ -4,7 +4,7 @@ Easy to use, add script to wall an enjoy
 
 
 License
-Copyright 2013-2016 Georg Seifert (@schriftgestalt), Jan Gerner (@yanone) and Rainer Erich Scheichelbauer (@mekkablue).
+Copyright 2024 Reza Bohloul.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
