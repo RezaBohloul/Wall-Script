@@ -1,6 +1,7 @@
 Wall Script
 Easy to use, add script to wall an enjoy
 
+![Wall Script](https://github.com/user-attachments/assets/f25e198c-0900-4e14-b264-70f7172ad8c5)
 
 **License**
 
