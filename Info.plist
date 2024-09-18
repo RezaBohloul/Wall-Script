@@ -7,15 +7,15 @@
 	<key>CFBundleExecutable</key>
 	<string>plugin</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.RezaBohloul.WallScript</string>
+	<string>com.Reza Bohloul.WallScript</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>WallScript</string>
+	<string>Wall Script</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>0.1</string> <!-- 1.0 -->
 	<key>CFBundleVersion</key>
-	<string>1.0</string>
+	<string>1</string> <!-- 123 -->
 	<key>UpdateFeedURL</key>
 	<string>____OnlineUrlToThisPlist____</string>
 	<key>productPageURL</key>
