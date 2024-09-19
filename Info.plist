@@ -17,9 +17,9 @@
 	<key>CFBundleVersion</key>
 	<string>1</string> <!-- 123 -->
 	<key>UpdateFeedURL</key>
-	<string>____OnlineUrlToThisPlist____</string>
+	<string>https://github.com/RezaBohloul/Wall-Script/blob/Wall-Script/Wall%20Script.glyphsPlugin.zip</string>
 	<key>productPageURL</key>
-	<string>____ProductPageURL____</string>
+	<string>https://github.com/RezaBohloul/Wall-Script/blob/Wall-Script</string>
 	<key>productReleaseNotes</key>
 	<string>____LatestReleaseNotes____</string>
 	<key>NSHumanReadableCopyright</key>
