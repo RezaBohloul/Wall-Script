@@ -9,50 +9,54 @@
 ###########################################################################################################
 
 from __future__ import division, print_function, unicode_literals
-import objc # type: ignore
-from GlyphsApp import Glyphs, WINDOW_MENU # type: ignore
-from GlyphsApp.plugins import GeneralPlugin # type: ignore
-from AppKit import NSMenuItem # type: ignore
+import objc
+import os
+import json
+import textwrap
+from GlyphsApp import Glyphs, WINDOW_MENU, GSGlyphsInfo, Message
+from GlyphsApp.plugins import GeneralPlugin
+from AppKit import NSMenuItem, NSFont, NSColor, NSAttributedString, NSImage, NSEvent, NSOpenPanel, NSScreen, NSEventMaskKeyDown, NSFileHandlingPanelOKButton, NSForegroundColorAttributeName, NSFontAttributeName, NSCalibratedRGBColorSpace, NSImageScaleProportionallyUpOrDown  # type: ignore
+import vanilla
 
 
 class WallScript(GeneralPlugin):
 
-	@objc.python_method
-	def settings(self):
-		self.name = Glyphs.localize({
-			'en': 'Wall Script',
-		})
+    @objc.python_method
+    def settings(self):
+        self.name = Glyphs.localize({
+            'en': 'Wall Script',
+        })
 
-	@objc.python_method
-	def start(self):
-		if Glyphs.versionNumber >= 3.3:
-			newMenuItem = NSMenuItem(self.name, callback=self.showWindow_, target=self)
-		else:
-			newMenuItem = NSMenuItem(self.name, self.showWindow_)
-		Glyphs.menu[WINDOW_MENU].append(newMenuItem)
+    @objc.python_method
+    def start(self):
+        if Glyphs.buildNumber >= 3320:
+            from GlyphsApp.UI import MenuItem
+            newMenuItem = MenuItem(self.name, action=self.doArrangeWindows_, target=self)
+        elif Glyphs.versionNumber >= 3.3:
+            newMenuItem = NSMenuItem(self.name, callback=self.showWindow_, target=self)
+        else:
+            newMenuItem = NSMenuItem(self.name, self.showWindow_)
+        Glyphs.menu[WINDOW_MENU].append(newMenuItem)
 
-	def showWindow_(self, sender):
-		"""Do something like show a window """
-		print("show Windows")
+    def showWindow_(self, sender):
+        """Do something like show a window """
+        print("show Windows")
 
-	@objc.python_method
-	def __file__(self):
-		"""Please leave this method unchanged"""
-		return __file__
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-import vanilla # type: ignore
-import os
-import json
-import textwrap
-import GlyphsApp # type: ignore
-from AppKit import NSFont, NSColor, NSAttributedString, NSImage, NSEvent, NSOpenPanel, NSScreen, NSEventMaskKeyDown, NSFileHandlingPanelOKButton, NSForegroundColorAttributeName, NSFontAttributeName, NSCalibratedRGBColorSpace, NSImageScaleProportionallyUpOrDown # type: ignore
+    @objc.python_method
+    def __file__(self):
+        """Please leave this method unchanged"""
+        return __file__
 
-SCRIPT_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script.txt")
-COLOR_FILE = os.path.join(GlyphsApp.GSGlyphsInfo.applicationSupportPath(), "Wall Script Colors.txt")
+
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+
+SCRIPT_FILE = os.path.join(GSGlyphsInfo.applicationSupportPath(), "Wall Script.txt")
+COLOR_FILE = os.path.join(GSGlyphsInfo.applicationSupportPath(), "Wall Script Colors.txt")
 
 TOTAL_SUB_WINDOWS = 4
 ROWS = 4
@@ -83,14 +87,17 @@ PREDEFINED_COLORS = [
     NSColor.colorWithRed_green_blue_alpha_(1.0, 1.0, 1.0, 0.1)
 ]
 
+
 def nscolor_to_rgb(color):
     """Convert NSColor to an RGB tuple."""
     color = color.colorUsingColorSpaceName_(NSCalibratedRGBColorSpace)
     return (color.redComponent(), color.greenComponent(), color.blueComponent(), color.alphaComponent())
 
+
 def rgb_to_nscolor(rgb):
     """Convert an RGB tuple to NSColor."""
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
+
 
 # Place color window buttons without text in the center of the screen.
 def make_color_window(color_options, callback):
@@ -105,11 +112,11 @@ def make_color_window(color_options, callback):
 
     # Get the main screen's frame
     screen_frame = NSScreen.mainScreen().frame()
-    
+
     # Calculate the position to center the window
     x_pos = (screen_frame.size.width - width) / 2
     y_pos = (screen_frame.size.height - height) / 2
-    
+
     # Set the window's position
     w.setPosSize((x_pos, y_pos, width, height))
 
@@ -122,7 +129,7 @@ def make_color_window(color_options, callback):
         # Create vanilla button with no title
         button = vanilla.Button((x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), "", callback=callback)
         button.color = color
-        
+
         # Get NSButton instance from vanilla button
         ns_button = button.getNSButton()
         ns_button.setWantsLayer_(True)
@@ -131,10 +138,11 @@ def make_color_window(color_options, callback):
         ns_button.layer().setBorderWidth_(0)
         ns_button.setBordered_(False)
         ns_button.setImageScaling_(NSImageScaleProportionallyUpOrDown)
-        
+
         setattr(w, f"button_{i}, button")
-    
+
     return w
+
 
 if 'CustomColorPickerWindowUnique' not in globals():
     class CustomColorPickerWindowUnique(vanilla.Window):
@@ -146,6 +154,7 @@ if 'CustomColorPickerWindowUnique' not in globals():
         def color_selected(self, sender):
             self.callback(sender.color)
             self.w.close()
+
 
 class WallScript:
     def __init__(self):
@@ -301,7 +310,7 @@ class WallScript:
                 self.w.close()  # Close the main window after executing the script
 
             except Exception as e:
-                GlyphsApp.Message("Script Error", f"Error: {str(e)}")
+                Message("Script Error", f"Error: {str(e)}")
 
     def change_script(self, sender):
         open_panel = NSOpenPanel.openPanel()
@@ -442,4 +451,3 @@ class WallScript:
 
 # Initialize the window
 WallScript()
-
