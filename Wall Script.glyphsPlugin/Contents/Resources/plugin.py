@@ -19,42 +19,6 @@ from AppKit import NSMenuItem, NSFont, NSColor, NSAttributedString, NSImage, NSE
 import vanilla
 
 
-class WallScript(GeneralPlugin):
-
-    @objc.python_method
-    def settings(self):
-        self.name = Glyphs.localize({
-            'en': 'Wall Script',
-        })
-
-    @objc.python_method
-    def start(self):
-        if Glyphs.buildNumber >= 3320:
-            from GlyphsApp.UI import MenuItem
-            newMenuItem = MenuItem(self.name, action=self.doArrangeWindows_, target=self)
-        elif Glyphs.versionNumber >= 3.3:
-            newMenuItem = NSMenuItem(self.name, callback=self.showWindow_, target=self)
-        else:
-            newMenuItem = NSMenuItem(self.name, self.showWindow_)
-        Glyphs.menu[WINDOW_MENU].append(newMenuItem)
-
-    def showWindow_(self, sender):
-        """Do something like show a window """
-        print("show Windows")
-
-    @objc.python_method
-    def __file__(self):
-        """Please leave this method unchanged"""
-        return __file__
-
-
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-
 SCRIPT_FILE = os.path.join(GSGlyphsInfo.applicationSupportPath(), "Wall Script.txt")
 COLOR_FILE = os.path.join(GSGlyphsInfo.applicationSupportPath(), "Wall Script Colors.txt")
 
@@ -99,70 +63,87 @@ def rgb_to_nscolor(rgb):
     return NSColor.colorWithRed_green_blue_alpha_(rgb[0], rgb[1], rgb[2], rgb[3])
 
 
-# Place color window buttons without text in the center of the screen.
-def make_color_window(color_options, callback):
-    BUTTON_SIZE = 40
-    BUTTONS_PER_ROW = 4
-    GRID_SPACING = 20
-    width = BUTTONS_PER_ROW * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING - 10
-    height = (len(color_options) / BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING - 8
+class WallScript(GeneralPlugin):
 
-    # Create the window with default position
-    w = vanilla.Window((width, height), "Select Color", closable=True)
+    w = None
+    color_window = None
 
-    # Get the main screen's frame
-    screen_frame = NSScreen.mainScreen().frame()
+    @objc.python_method
+    def settings(self):
+        self.name = Glyphs.localize({
+            'en': 'Wall Script',
+        })
 
-    # Calculate the position to center the window
-    x_pos = (screen_frame.size.width - width) / 2
-    y_pos = (screen_frame.size.height - height) / 2
-
-    # Set the window's position
-    w.setPosSize((x_pos, y_pos, width, height))
-
-    for i, color in enumerate(color_options):
-        row = i // BUTTONS_PER_ROW
-        col = i % BUTTONS_PER_ROW
-        x_pos = GRID_SPACING + col * (BUTTON_SIZE + GRID_SPACING) - 5
-        y_pos = GRID_SPACING + row * (BUTTON_SIZE + GRID_SPACING) - 5
-
-        # Create vanilla button with no title
-        button = vanilla.Button((x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), "", callback=callback)
-        button.color = color
-
-        # Get NSButton instance from vanilla button
-        ns_button = button.getNSButton()
-        ns_button.setWantsLayer_(True)
-        ns_button.layer().setBackgroundColor_(color.CGColor())
-        ns_button.layer().setCornerRadius_(5)
-        ns_button.layer().setBorderWidth_(0)
-        ns_button.setBordered_(False)
-        ns_button.setImageScaling_(NSImageScaleProportionallyUpOrDown)
-
-        setattr(w, f"button_{i}, button")
-
-    return w
-
-
-if 'CustomColorPickerWindowUnique' not in globals():
-    class CustomColorPickerWindowUnique(vanilla.Window):
-        def __init__(self, color_options, callback):
-            self.callback = callback
-            self.w = make_color_window(color_options, self.color_selected)
-            self.w.open()
-
-        def color_selected(self, sender):
-            self.callback(sender.color)
-            self.w.close()
-
-
-class WallScript:
-    def __init__(self):
         self.scripts = {}  # Initialize the scripts attribute
         self.load_scripts()
         self.load_colors()
+        self.current_sub_window = 0
         self.update_total_sub_windows()
 
+    @objc.python_method
+    def start(self):
+        if Glyphs.buildNumber >= 3320:
+            from GlyphsApp.UI import MenuItem
+            newMenuItem = MenuItem(self.name, action=self.showWindow_, target=self)
+        elif Glyphs.versionNumber >= 3.3:
+            newMenuItem = NSMenuItem(self.name, callback=self.showWindow_, target=self)
+        else:
+            newMenuItem = NSMenuItem(self.name, self.showWindow_)
+        Glyphs.menu[WINDOW_MENU].append(newMenuItem)
+
+    def showWindow_(self, sender):
+        """Do something like show a window """
+        if self.w is None:
+            self.make_main_window()
+        self.w.open()
+
+    # Place color window buttons without text in the center of the screen.
+    @objc.python_method
+    def make_color_window(self, color_options, callback, box_index):
+        BUTTON_SIZE = 40
+        BUTTONS_PER_ROW = 4
+        GRID_SPACING = 20
+        width = BUTTONS_PER_ROW * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING - 10
+        height = (len(color_options) / BUTTONS_PER_ROW) * (BUTTON_SIZE + GRID_SPACING) + GRID_SPACING - 8
+
+        # Create the window with default position
+        w = vanilla.Window((width, height), "Select Color", closable=True)
+
+        # Get the main screen's frame
+        screen_frame = NSScreen.mainScreen().frame()
+
+        # Calculate the position to center the window
+        x_pos = (screen_frame.size.width - width) / 2
+        y_pos = (screen_frame.size.height - height) / 2
+
+        # Set the window's position
+        w.setPosSize((x_pos, y_pos, width, height))
+
+        for i, color in enumerate(color_options):
+            row = i // BUTTONS_PER_ROW
+            col = i % BUTTONS_PER_ROW
+            x_pos = GRID_SPACING + col * (BUTTON_SIZE + GRID_SPACING) - 5
+            y_pos = GRID_SPACING + row * (BUTTON_SIZE + GRID_SPACING) - 5
+
+            # Create vanilla button with no title
+            button = vanilla.Button((x_pos, y_pos, BUTTON_SIZE, BUTTON_SIZE), "", callback=callback)
+            button.color = color
+
+            # Get NSButton instance from vanilla button
+            ns_button = button.getNSButton()
+            ns_button.setWantsLayer_(True)
+            ns_button.layer().setBackgroundColor_(color.CGColor())
+            ns_button.layer().setCornerRadius_(5)
+            ns_button.layer().setBorderWidth_(0)
+            ns_button.setBordered_(False)
+            ns_button.setImageScaling_(NSImageScaleProportionallyUpOrDown)
+            button.box_index = box_index
+            setattr(w, f"button_{i}", button)
+
+        return w
+
+    @objc.python_method
+    def make_main_window(self):
         # Get screen dimensions and center the window
         screen_frame = NSScreen.mainScreen().frame()
         window_width = BOX_WIDTH * COLS + GRID_SPACING * 2
@@ -172,7 +153,6 @@ class WallScript:
 
         # Main window initialization centered on the screen
         self.w = vanilla.Window((window_x, window_y, window_width, window_height), closable=True)
-        self.current_sub_window = 0
 
         self.total_sub_windows = TOTAL_SUB_WINDOWS
 
@@ -216,14 +196,15 @@ class WallScript:
 
         self.add_key_event_monitor()
         self.w.bind("close", self.remove_key_event_monitor)
-        self.w.open()
 
+    @objc.python_method
     def title_edited(self, sender):
         title = sender.get()
         if not title.strip():
             title = f"Wall Script {self.current_sub_window + 1}"
         self.w.titleLabel.set(title)
 
+    @objc.python_method
     def update_total_sub_windows(self):
         if os.path.exists(SCRIPT_FILE):
             with open(SCRIPT_FILE, 'r', encoding='utf-8') as file:
@@ -233,6 +214,7 @@ class WallScript:
                     TOTAL_SUB_WINDOWS = int(first_line.split('=')[1])
                     self.total_sub_windows = TOTAL_SUB_WINDOWS
 
+    @objc.python_method
     def update_subview(self, index):
         for name in dir(self.w.subview):
             if name.startswith("button_") or name.startswith("tiny_button_") or name.startswith("color_button_") or name.startswith("remove_button_"):
@@ -244,6 +226,7 @@ class WallScript:
         if current_title.startswith("Wall Script"):
             self.w.titleLabel.set(f"Wall Script {index + 1}")
 
+    @objc.python_method
     def create_sub_window(self, index):
         gray_color = NSColor.systemGrayColor()
         blue_color = NSColor.systemBlueColor()
@@ -300,6 +283,7 @@ class WallScript:
 
                 idx += 1
 
+    @objc.python_method
     def run_script(self, sender):
         script_path = self.scripts.get(f"box_{sender.box_index}", None)
         if script_path:
@@ -312,6 +296,7 @@ class WallScript:
             except Exception as e:
                 Message("Script Error", f"Error: {str(e)}")
 
+    @objc.python_method
     def change_script(self, sender):
         open_panel = NSOpenPanel.openPanel()
         open_panel.setTitle_("Choose Script")
@@ -322,6 +307,7 @@ class WallScript:
             self.refresh_button_view(sender.box_index)
             self.save_scripts()
 
+    @objc.python_method
     def remove_script(self, sender):
         if f"box_{sender.box_index}" in self.scripts:
             del self.scripts[f"box_{sender.box_index}"]
@@ -333,15 +319,24 @@ class WallScript:
             self.refresh_button_view(sender.box_index)
             self.save_colors()
 
+    @objc.python_method
     def show_color_picker(self, sender):
-        def color_selected_callback(selected_color):
-            color_rgb = nscolor_to_rgb(selected_color)
-            self.button_colors[f"box_{sender.box_index}"] = color_rgb
-            self.refresh_button_view(sender.box_index)
-            self.save_colors()
+        self.color_window = self.make_color_window(PREDEFINED_COLORS, self.color_selected, sender.box_index)
+        self.color_window.open()
 
-        CustomColorPickerWindowUnique(PREDEFINED_COLORS, color_selected_callback)
+    @objc.python_method
+    def color_selected(self, sender):
+        print("__sender", sender)
+        selected_color = sender.color
+        color_rgb = nscolor_to_rgb(selected_color)
+        self.button_colors[f"box_{sender.box_index}"] = color_rgb
+        self.refresh_button_view(sender.box_index)
+        self.save_colors()
 
+        self.color_window.close()
+        self.color_window = None
+
+    @objc.python_method
     def refresh_button_view(self, box_index):
         script_name = self.scripts.get(f"box_{box_index}", "No Script")
         display_name = os.path.basename(script_name) if script_name != "No Script" else script_name
@@ -367,22 +362,26 @@ class WallScript:
         )
         button.getNSButton().setAttributedTitle_(attributed_title)
 
+    @objc.python_method
     def navigate_right(self, sender):
         if self.current_sub_window < self.total_sub_windows - 1:
             self.current_sub_window += 1
             self.update_subview(self.current_sub_window)
 
+    @objc.python_method
     def navigate_left(self, sender):
         if self.current_sub_window > 0:
             self.current_sub_window -= 1
             self.update_subview(self.current_sub_window)
 
+    @objc.python_method
     def add_page(self, sender):
         self.total_sub_windows += 1
         self.current_sub_window = self.total_sub_windows - 1
         self.update_subview(self.current_sub_window)
         self.save_total_sub_windows()
 
+    @objc.python_method
     def delete_page(self, sender):
         if self.total_sub_windows > 1:
             self.total_sub_windows -= 1
@@ -390,6 +389,7 @@ class WallScript:
             self.update_subview(self.current_sub_window)
             self.save_total_sub_windows()
 
+    @objc.python_method
     def save_total_sub_windows(self):
         with open(SCRIPT_FILE, 'r+', encoding='utf-8') as file:
             lines = file.readlines()
@@ -397,6 +397,7 @@ class WallScript:
             file.write(f"TOTAL_SUB_WINDOWS={self.total_sub_windows}\n")
             file.writelines(lines[1:])  # write the remaining lines
 
+    @objc.python_method
     def load_scripts(self):
         if os.path.exists(SCRIPT_FILE):
             with open(SCRIPT_FILE, 'r', encoding='utf-8') as file:
@@ -409,12 +410,14 @@ class WallScript:
         else:
             self.scripts = {}
 
+    @objc.python_method
     def save_scripts(self):
         with open(SCRIPT_FILE, 'w', encoding='utf-8') as file:
             file.write(f"TOTAL_SUB_WINDOWS={self.total_sub_windows}\n")
             for key, value in self.scripts.items():
                 file.write(f"{key}={value}\n")
 
+    @objc.python_method
     def load_colors(self):
         if os.path.exists(COLOR_FILE):
             with open(COLOR_FILE, 'r', encoding='utf-8') as file:
@@ -422,13 +425,16 @@ class WallScript:
         else:
             self.button_colors = {}
 
+    @objc.python_method
     def save_colors(self):
         with open(COLOR_FILE, 'w', encoding='utf-8') as file:
             json.dump(self.button_colors, file, indent=2)
 
+    @objc.python_method
     def add_key_event_monitor(self):
         self.key_event_monitor = NSEvent.addLocalMonitorForEventsMatchingMask_handler_(NSEventMaskKeyDown, self.handle_key_event)
 
+    @objc.python_method
     def handle_key_event(self, event):
         key_code = event.keyCode()
 
@@ -443,11 +449,14 @@ class WallScript:
             return None  # Prevent system beep
         return event  # Pass through unhandled keys
 
+    @objc.python_method
     def remove_key_event_monitor(self, sender):
         if self.key_event_monitor:
             NSEvent.removeMonitor_(self.key_event_monitor)
             self.key_event_monitor = None
+        self.w = None
 
-
-# Initialize the window
-WallScript()
+    @objc.python_method
+    def __file__(self):
+        """Please leave this method unchanged"""
+        return __file__
