@@ -7,7 +7,7 @@ Add script to each block of wall then when you click on block, attached script r
 
 # You can add infinit number of Walls.
 
-![Wall Script](https://github.com/user-attachments/assets/f25e198c-0900-4e14-b264-70f7172ad8c5)
+![Wall Script](###)
 
 # License
 
