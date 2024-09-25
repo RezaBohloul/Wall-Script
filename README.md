@@ -1,13 +1,21 @@
 # Wall Script
 *where you pin your most needed script to it*
 
-Easy to use
+# How to use
 
-Add script to each block of wall then when you click on block, attached script runs.
+You do not need memorize too much shortcut for favorite scripts, just define shortcut for wall script like command+9 and use it instead of all shortcut. Add script to each block of wall then when you click on block, attached script runs. You can change color of block to find it more easily in the wall or change/delete attached script when you want. You can add infinit number of Walls, use arrow key to next/previous wall.
 
-# You can add infinit number of Walls.
+### After instalation, you never think not working withot it.
+
+*Upon installation, you will locate Wall Script in the window menu*
 
 ![Wall Script](https://github.com/RezaBohloul/Wall-Script/blob/main/Image/Wall%20Script.png)
+
+# Installation
+1. Open Window > Plugin Manager
+2. Find Anchor Wall Script and click the Install button
+3. Restart Glyphs.app
+
 
 # License
 
