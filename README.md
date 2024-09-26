@@ -1,7 +1,7 @@
 # Wall Script
 *where you pin your most needed script to it*
 
-# How to use
+## How to use
 
 You do not need memorize too much shortcut for favorite scripts, just define shortcut for wall script and use it instead of all shortcut. Add script to each block of wall then when you click on block, attached script runs. You can change color of block to find it more easily in the wall or change/delete attached script when you want. You can add infinit number of Walls, use arrow key to next/previous wall.
 
